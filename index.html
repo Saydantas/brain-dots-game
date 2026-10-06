@@ -1,0 +1,5318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#090d16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Brain Dots - Traço Único (40 Níveis)</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      box-sizing: border-box;
+    }
+    body {
+      touch-action: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    .theme-cyber {
+      --bg-main: #090d16;
+      --bg-card: #0f172a;
+      --border-color: #1e293b;
+      --line-color: #06b6d4;
+      --line-faint: #334155;
+      --dot-color: #ef4444;
+      --active-dot: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    .theme-paper {
+      --bg-main: #f1f5f9;
+      --bg-card: #ffffff;
+      --border-color: #cbd5e1;
+      --line-color: #2563eb;
+      --line-faint: #cbd5e1;
+      --dot-color: #dc2626;
+      --active-dot: #d97706;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+    .theme-zen {
+      --bg-main: #18181b;
+      --bg-card: #27272a;
+      --border-color: #3f3f46;
+      --line-color: #ec4899;
+      --line-faint: #52525b;
+      --dot-color: #f43f5e;
+      --active-dot: #fbbf24;
+      --text-main: #fafafa;
+      --text-muted: #a1a1aa;
+    }
+
+    .glow-cyan {
+      filter: drop-shadow(0 0 7px rgba(6, 182, 212, 0.85));
+    }
+    .glow-amber {
+      filter: drop-shadow(0 0 9px rgba(245, 158, 11, 0.95));
+    }
+    .glow-dot {
+      filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.75));
+    }
+    @keyframes pulseHint {
+      0%, 100% { r: 14; opacity: 0.9; }
+      50% { r: 21; opacity: 0.25; }
+    }
+    .hint-pulse {
+      animation: pulseHint 1.2s infinite ease-in-out;
+    }
+    @keyframes starPop {
+      0% { transform: scale(0); opacity: 0; }
+      70% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .star-pop {
+      animation: starPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    
+    .paper-grid {
+      background-image: 
+        linear-gradient(to right, rgba(148, 163, 184, 0.15) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.15) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+  </style>
+</head>
+<body class="bg-[#090d16] text-slate-100 flex items-center justify-center p-0 sm:p-2 overflow-hidden select-none theme-cyber min-h-screen" id="body-root">
+
+  <!-- Mobile Screen Container -->
+  <div id="game-container" class="w-full max-w-[420px] h-[100dvh] sm:h-[485px] sm:max-h-[760px] bg-[#0c1322] border border-slate-800 rounded-none sm:rounded-3xl flex flex-col justify-between shadow-2xl relative overflow-hidden ring-1 ring-white/10 transition-colors duration-300">
+
+    <!-- Top Status Bar -->
+    <div class="px-3 pt-2 pb-1.5 flex items-center justify-between border-b border-slate-800/80 bg-slate-900/70 backdrop-blur-md z-10">
+      <div class="flex items-center gap-1.5">
+        <button id="btn-levels-modal" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700/80 text-[11px] font-semibold text-cyan-400 transition-colors">
+          <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+          <span id="level-indicator">Nível 1/40</span>
+        </button>
+
+        <span id="chapter-badge" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          Cap. 1
+        </span>
+      </div>
+      
+      <div class="flex items-center gap-1">
+        <span id="progress-indicator" class="text-[11px] font-mono font-bold text-slate-300 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700/60">
+          0 / 3
+        </span>
+
+        <span id="timer-display" class="text-[10px] font-mono text-slate-400 px-1.5 py-0.5 rounded bg-slate-800/50 hidden sm:inline-block">
+          00:00
+        </span>
+
+        <button id="btn-music" class="w-6 h-6 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 text-[11px] transition-colors" title="Música ambiente">
+          <span id="music-icon">🎵</span>
+        </button>
+
+        <button id="btn-sound" class="w-6 h-6 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 text-[11px] transition-colors" title="Efeitos sonoros">
+          <span id="sound-icon">🔊</span>
+        </button>
+
+        <button id="btn-themes" class="w-6 h-6 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 text-[11px] transition-colors" title="Temas">
+          🎨
+        </button>
+      </div>
+    </div>
+
+    <!-- Level Header -->
+    <div class="px-3 pt-1 text-center flex flex-col items-center">
+      <div class="flex items-center gap-1.5">
+        <h1 id="level-title" class="text-sm font-bold text-white tracking-wide">O Triângulo</h1>
+        <span id="outside-badge" class="hidden text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">
+          Fora da Caixa!
+        </span>
+      </div>
+      <p id="level-subtitle" class="text-[11px] text-slate-400 truncate max-w-[320px]">Ligue todas as retas sem tirar o dedo</p>
+    </div>
+
+    <!-- SVG Canvas Area -->
+    <div class="flex-1 relative flex items-center justify-center px-2 py-0">
+      <div class="w-full h-full max-h-[265px] relative flex items-center justify-center">
+        <svg id="game-svg" viewBox="0 0 300 300" class="w-full h-full max-w-[275px] max-h-[265px] touch-none select-none overflow-visible">
+          <!-- Guide Grid / Background Elements -->
+          <g id="box-guide" class="hidden">
+            <rect x="80" y="70" width="120" height="120" fill="rgba(168, 85, 247, 0.08)" stroke="#a855f7" stroke-dasharray="4 4" stroke-width="1.5" rx="6" />
+            <text x="140" y="58" text-anchor="middle" fill="#c084fc" font-size="10" font-weight="bold">"Caixa" dos 9 pontos</text>
+          </g>
+
+          <!-- Faint Undrawn Silhouette Edges -->
+          <g id="silhouette-layer"></g>
+
+          <!-- Active Drawn Glowing Edges -->
+          <g id="drawn-layer"></g>
+
+          <!-- Rubber-band line while dragging -->
+          <line id="drag-line" x1="0" y1="0" x2="0" y2="0" stroke="#06b6d4" stroke-width="4" stroke-linecap="round" class="glow-cyan" opacity="0" />
+
+          <!-- Hints Layer -->
+          <g id="hint-layer"></g>
+
+          <!-- Nodes (Dots) Layer -->
+          <g id="nodes-layer"></g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Status Toast -->
+    <div class="px-3 py-0.5">
+      <div id="status-toast" class="text-center text-[11px] py-1 px-2.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300 truncate">
+        Arraste o dedo ou toque de ponto em ponto para começar!
+      </div>
+    </div>
+
+    <!-- Action Buttons Bar -->
+    <div class="px-3.5 py-2 border-t border-slate-800 bg-slate-900/80 flex items-center justify-around gap-2">
+      <button id="btn-hint" class="flex-1 py-1.5 px-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold flex items-center justify-center gap-1 transition-transform active:scale-95">
+        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm-2 18h4v1h-4v-1zm1-2h2v1h-2v-1z"/></svg>
+        <span id="hint-btn-text">Dica (1/3 Grátis)</span>
+      </button>
+
+      <button id="btn-undo" class="flex-1 py-1.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1 transition-transform active:scale-95 disabled:opacity-40">
+        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+        <span>Desfazer</span>
+      </button>
+
+      <button id="btn-reset" class="flex-1 py-1.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1 transition-transform active:scale-95">
+        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        <span>Limpar</span>
+      </button>
+    </div>
+
+    <!-- MODAL: VICTORY -->
+    <div id="modal-victory" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-30 hidden transition-all">
+      <div class="w-full max-w-[280px] bg-slate-900 border border-cyan-500/30 rounded-2xl p-5 text-center shadow-2xl flex flex-col items-center">
+        <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-2 text-2xl">
+          🎉
+        </div>
+        <h3 class="text-base font-extrabold text-white">Desafio Vencido!</h3>
+        <p class="text-[11px] text-slate-400 mt-0.5" id="victory-subtitle">Traço único perfeito!</p>
+
+        <div class="flex items-center gap-1.5 my-3">
+          <span id="star-1" class="text-2xl opacity-30">⭐</span>
+          <span id="star-2" class="text-3xl opacity-30">⭐</span>
+          <span id="star-3" class="text-2xl opacity-30">⭐</span>
+        </div>
+
+        <div class="w-full flex flex-col gap-2 mt-1">
+          <button id="btn-next-level" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-white text-xs shadow-md shadow-cyan-500/25 active:scale-95 transition-all">
+            Próximo Desafio ▶
+          </button>
+          <button id="btn-replay" class="w-full py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-slate-300">
+            Jogar Novamente
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: LEVEL SELECTOR -->
+    <div id="modal-levels" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md p-3.5 z-40 hidden flex flex-col">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <div>
+          <h2 class="text-sm font-bold text-white">40 Desafios Geométricos</h2>
+          <p class="text-[10px] text-slate-400">Divididos em 4 Capítulos</p>
+        </div>
+        <button id="btn-close-levels" class="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 text-xs">
+          ✕
+        </button>
+      </div>
+
+      <div class="flex items-center gap-1 pt-2 pb-1 border-b border-slate-800/60 overflow-x-auto text-[10px]">
+        <button class="chap-tab px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-400 font-bold border border-cyan-500/30 whitespace-nowrap" data-chap="1">Cap. 1 (1-10)</button>
+        <button class="chap-tab px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white whitespace-nowrap" data-chap="2">Cap. 2 (11-20)</button>
+        <button class="chap-tab px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white whitespace-nowrap" data-chap="3">Cap. 3 (21-30)</button>
+        <button class="chap-tab px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white whitespace-nowrap" data-chap="4">Cap. 4 (31-40)</button>
+      </div>
+
+      <div id="levels-grid" class="flex-1 overflow-y-auto py-2.5 grid grid-cols-5 gap-2 pr-1">
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 flex justify-between items-center text-[10px] text-slate-400">
+        <span>Progresso Total: <b id="total-stars-earned" class="text-amber-400">0</b> / 120 ⭐</span>
+        <button id="btn-reset-save" class="text-rose-400 hover:underline">Zerar Progresso</button>
+      </div>
+    </div>
+
+
+    <!-- MODAL: REWARDED VIDEO AD SIMULATOR -->
+    <div id="modal-rewarded-ad" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md p-4 z-50 hidden flex flex-col justify-between select-none">
+      <!-- Ad Top Bar -->
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            🎬 Anúncio Premiado
+          </span>
+          <span id="ad-reward-label" class="text-[10px] text-slate-400">Dica 2 de 3</span>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <!-- Timer countdown badge -->
+          <span id="ad-timer-badge" class="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-cyan-400">
+            Recompensa em 5s
+          </span>
+          <!-- Close button -->
+          <button id="btn-close-ad" class="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 text-xs">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Ad Progress Bar -->
+      <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1">
+        <div id="ad-progress-bar" class="bg-gradient-to-r from-amber-400 to-cyan-400 h-full w-0 transition-all duration-1000 ease-linear"></div>
+      </div>
+
+      <!-- Ad Creative Body (Interactive Mobile Game Mock Ad) -->
+      <div class="my-auto bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col items-center text-center shadow-xl relative overflow-hidden">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-3xl shadow-lg shadow-purple-500/20 mb-2.5 animate-bounce">
+          ⚔️
+        </div>
+        <h4 id="ad-game-title" class="text-sm font-extrabold text-white">Hero Quest: Arena 3D</h4>
+        <p class="text-[11px] text-slate-400 mt-0.5 max-w-[240px]" id="ad-game-desc">
+          O melhor RPG tático mobile do ano! Conquiste reinos e vença batalhas épicas.
+        </p>
+
+        <!-- Rating & Badges -->
+        <div class="flex items-center gap-3 my-2 text-[10px] text-slate-400">
+          <span class="text-amber-400 font-bold">4.9 ★★★★★</span>
+          <span>•</span>
+          <span>10M+ Downloads</span>
+          <span>•</span>
+          <span class="text-emerald-400 font-semibold">Grátis</span>
+        </div>
+
+        <!-- Simulated Ad Call-to-Action -->
+        <button onclick="window.open('https://play.google.com', '_blank')" class="mt-2 w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 font-bold text-white text-xs shadow-md shadow-emerald-500/20 transition-transform active:scale-95 flex items-center justify-center gap-1.5">
+          <span>Instalar Agora</span>
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
+        </button>
+      </div>
+
+      <!-- Ad Bottom Footer -->
+      <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-500">
+        <span>Anúncio simulado para liberar dica</span>
+        <span id="ad-status-msg" class="text-cyan-400 font-medium">Aguarde 5s para desbloquear...</span>
+      </div>
+    </div>
+
+    <!-- MODAL: THEMES SELECTOR -->
+    <div id="modal-themes" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md p-4 z-40 hidden flex flex-col justify-center items-center">
+      <div class="w-full max-w-[280px] bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+        <h3 class="text-sm font-bold text-white mb-1">Escolha o Tema Visual</h3>
+        <p class="text-[11px] text-slate-400 mb-3">Mude a estética do jogo a qualquer momento</p>
+
+        <div class="flex flex-col gap-2">
+          <button class="theme-opt p-2.5 rounded-xl border border-cyan-500/40 bg-slate-800 text-xs font-semibold text-cyan-400 flex items-center justify-between" data-theme="theme-cyber">
+            <span>🌌 Cyber Neon (Escuro)</span>
+            <span>✔</span>
+          </button>
+          <button class="theme-opt p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300 flex items-center justify-between hover:bg-slate-700" data-theme="theme-paper">
+            <span>📝 Caderno de Folha (Papel)</span>
+            <span></span>
+          </button>
+          <button class="theme-opt p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300 flex items-center justify-between hover:bg-slate-700" data-theme="theme-zen">
+            <span>🌅 Sunset Zen (Crepúsculo)</span>
+            <span></span>
+          </button>
+        </div>
+
+        <button id="btn-close-themes" class="mt-4 w-full py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 hover:bg-slate-700">
+          Fechar
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const LEVELS = [
+  {
+    "id": 1,
+    "title": "O Triângulo",
+    "subtitle": "Primeiros passos",
+    "nodes": [
+      [
+        150,
+        60
+      ],
+      [
+        60,
+        240
+      ],
+      [
+        240,
+        240
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        0
+      ]
+    ],
+    "chapter": 1
+  },
+  {
+    "id": 2,
+    "title": "A Ampulheta",
+    "subtitle": "Vértice compartilhado",
+    "nodes": [
+      [
+        70,
+        70
+      ],
+      [
+        230,
+        70
+      ],
+      [
+        150,
+        160
+      ],
+      [
+        70,
+        250
+      ],
+      [
+        230,
+        250
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        2
+      ]
+    ],
+    "chapter": 1
+  },
+  {
+    "id": 3,
+    "title": "A Casa Clássica",
+    "subtitle": "O famoso envelope",
+    "nodes": [
+      [
+        150,
+        60
+      ],
+      [
+        70,
+        140
+      ],
+      [
+        230,
+        140
+      ],
+      [
+        70,
+        250
+      ],
+      [
+        230,
+        250
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        3
+      ]
+    ],
+    "chapter": 1
+  },
+  {
+    "id": 4,
+    "title": "O Diamante Lapidado",
+    "subtitle": "Facetas brilhantes",
+    "chapter": 1,
+    "nodes": [
+      [
+        150,
+        50
+      ],
+      [
+        80,
+        130
+      ],
+      [
+        220,
+        130
+      ],
+      [
+        80,
+        200
+      ],
+      [
+        220,
+        200
+      ],
+      [
+        150,
+        270
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        3
+      ]
+    ]
+  },
+  {
+    "id": 5,
+    "title": "A Estrela de 5 Pontas",
+    "subtitle": "Harmonia geométrica",
+    "nodes": [
+      [
+        150,
+        50
+      ],
+      [
+        245,
+        120
+      ],
+      [
+        210,
+        230
+      ],
+      [
+        90,
+        230
+      ],
+      [
+        55,
+        120
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        0
+      ]
+    ],
+    "chapter": 1
+  },
+  {
+    "id": 6,
+    "title": "O Barco a Vela",
+    "subtitle": "Navegando no traço",
+    "nodes": [
+      [
+        150,
+        50
+      ],
+      [
+        150,
+        170
+      ],
+      [
+        240,
+        170
+      ],
+      [
+        60,
+        215
+      ],
+      [
+        240,
+        215
+      ],
+      [
+        195,
+        260
+      ],
+      [
+        105,
+        260
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        3
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    "chapter": 1
+  },
+  {
+    "id": 7,
+    "title": "O Peixinho",
+    "subtitle": "Águas calmas",
+    "nodes": [
+      [
+        60,
+        150
+      ],
+      [
+        140,
+        90
+      ],
+      [
+        140,
+        210
+      ],
+      [
+        220,
+        150
+      ],
+      [
+        270,
+        90
+      ],
+      [
+        270,
+        210
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        3
+      ]
+    ],
+    "chapter": 1
+  },
+  {
+    "id": 8,
+    "title": "A Borboleta Mandala",
+    "subtitle": "Asas sincronizadas",
+    "nodes": [
+      [
+        150,
+        150
+      ],
+      [
+        75,
+        75
+      ],
+      [
+        130,
+        65
+      ],
+      [
+        170,
+        65
+      ],
+      [
+        225,
+        75
+      ],
+      [
+        225,
+        225
+      ],
+      [
+        170,
+        235
+      ],
+      [
+        130,
+        235
+      ],
+      [
+        75,
+        225
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        0
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        0
+      ]
+    ],
+    "chapter": 1
+  },
+  {
+    "id": 9,
+    "title": "A Grande Pirâmide",
+    "subtitle": "Construção triangular",
+    "nodes": [
+      [
+        150,
+        50
+      ],
+      [
+        70,
+        160
+      ],
+      [
+        230,
+        160
+      ],
+      [
+        50,
+        260
+      ],
+      [
+        150,
+        260
+      ],
+      [
+        250,
+        260
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ]
+    ],
+    "chapter": 1
+  },
+  {
+    "id": 10,
+    "title": "O Cubo Cristal 3D",
+    "subtitle": "Ilusão dimensional",
+    "chapter": 1,
+    "nodes": [
+      [
+        150,
+        70
+      ],
+      [
+        75,
+        115
+      ],
+      [
+        225,
+        115
+      ],
+      [
+        150,
+        160
+      ],
+      [
+        75,
+        205
+      ],
+      [
+        225,
+        205
+      ],
+      [
+        150,
+        250
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        6,
+        5
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        1,
+        6
+      ],
+      [
+        5,
+        6
+      ]
+    ]
+  },
+  {
+    "id": 11,
+    "title": "Fora da Caixa (9 Pontos)",
+    "subtitle": "O enigma clássico original",
+    "nodes": [
+      [
+        80,
+        70
+      ],
+      [
+        140,
+        70
+      ],
+      [
+        200,
+        70
+      ],
+      [
+        260,
+        70
+      ],
+      [
+        80,
+        130
+      ],
+      [
+        140,
+        130
+      ],
+      [
+        200,
+        130
+      ],
+      [
+        80,
+        190
+      ],
+      [
+        140,
+        190
+      ],
+      [
+        200,
+        190
+      ],
+      [
+        80,
+        250
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        6,
+        8
+      ],
+      [
+        8,
+        10
+      ],
+      [
+        10,
+        7
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        5,
+        9
+      ]
+    ],
+    "chapter": 2
+  },
+  {
+    "id": 12,
+    "title": "O Foguete Espacial",
+    "subtitle": "Rumo às estrelas",
+    "nodes": [
+      [
+        150,
+        50
+      ],
+      [
+        110,
+        110
+      ],
+      [
+        190,
+        110
+      ],
+      [
+        110,
+        210
+      ],
+      [
+        190,
+        210
+      ],
+      [
+        60,
+        260
+      ],
+      [
+        150,
+        230
+      ],
+      [
+        240,
+        260
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    "chapter": 2
+  },
+  {
+    "id": 13,
+    "title": "O Brasão do Cavaleiro",
+    "subtitle": "Defesa impenetrável",
+    "nodes": [
+      [
+        70,
+        70
+      ],
+      [
+        150,
+        70
+      ],
+      [
+        230,
+        70
+      ],
+      [
+        70,
+        160
+      ],
+      [
+        150,
+        160
+      ],
+      [
+        230,
+        160
+      ],
+      [
+        150,
+        260
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        3
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        5
+      ]
+    ],
+    "chapter": 2
+  },
+  {
+    "id": 14,
+    "title": "O Moinho de Vento",
+    "subtitle": "Pás giratórias",
+    "nodes": [
+      [
+        150,
+        150
+      ],
+      [
+        150,
+        60
+      ],
+      [
+        210,
+        90
+      ],
+      [
+        240,
+        150
+      ],
+      [
+        210,
+        210
+      ],
+      [
+        150,
+        240
+      ],
+      [
+        90,
+        210
+      ],
+      [
+        60,
+        150
+      ],
+      [
+        90,
+        90
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        0
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        0
+      ]
+    ],
+    "chapter": 2
+  },
+  {
+    "id": 15,
+    "title": "A Estrela Hexagonal",
+    "subtitle": "Geometria sagrada",
+    "nodes": [
+      [
+        150,
+        50
+      ],
+      [
+        225,
+        95
+      ],
+      [
+        225,
+        185
+      ],
+      [
+        150,
+        230
+      ],
+      [
+        75,
+        185
+      ],
+      [
+        75,
+        95
+      ],
+      [
+        150,
+        140
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        6,
+        0
+      ],
+      [
+        6,
+        1
+      ],
+      [
+        6,
+        2
+      ],
+      [
+        6,
+        3
+      ],
+      [
+        6,
+        4
+      ],
+      [
+        6,
+        5
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        2,
+        3
+      ]
+    ],
+    "chapter": 2
+  },
+  {
+    "id": 16,
+    "title": "A Coroa Real",
+    "subtitle": "Digno de realeza",
+    "chapter": 2,
+    "nodes": [
+      [
+        60,
+        110
+      ],
+      [
+        105,
+        60
+      ],
+      [
+        150,
+        110
+      ],
+      [
+        195,
+        60
+      ],
+      [
+        240,
+        110
+      ],
+      [
+        60,
+        220
+      ],
+      [
+        150,
+        220
+      ],
+      [
+        240,
+        220
+      ]
+    ],
+    "edges": [
+      [
+        5,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        7
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        6,
+        5
+      ],
+      [
+        1,
+        6
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        3,
+        7
+      ]
+    ]
+  },
+  {
+    "id": 17,
+    "title": "O Pássaro Origami",
+    "subtitle": "Voo rasante",
+    "nodes": [
+      [
+        50,
+        90
+      ],
+      [
+        150,
+        130
+      ],
+      [
+        250,
+        90
+      ],
+      [
+        150,
+        190
+      ],
+      [
+        110,
+        250
+      ],
+      [
+        190,
+        250
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        0,
+        2
+      ]
+    ],
+    "chapter": 2
+  },
+  {
+    "id": 18,
+    "title": "O Coração Cristal",
+    "subtitle": "Linhas apaixonadas",
+    "nodes": [
+      [
+        105,
+        80
+      ],
+      [
+        150,
+        110
+      ],
+      [
+        195,
+        80
+      ],
+      [
+        60,
+        140
+      ],
+      [
+        240,
+        140
+      ],
+      [
+        150,
+        180
+      ],
+      [
+        150,
+        260
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "chapter": 2
+  },
+  {
+    "id": 19,
+    "title": "O Templo Antigo",
+    "subtitle": "Colunas de Atenas",
+    "nodes": [
+      [
+        150,
+        60
+      ],
+      [
+        60,
+        110
+      ],
+      [
+        240,
+        110
+      ],
+      [
+        60,
+        160
+      ],
+      [
+        150,
+        160
+      ],
+      [
+        240,
+        160
+      ],
+      [
+        60,
+        240
+      ],
+      [
+        150,
+        240
+      ],
+      [
+        240,
+        240
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        4,
+        7
+      ],
+      [
+        5,
+        8
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        4
+      ]
+    ],
+    "chapter": 2
+  },
+  {
+    "id": 20,
+    "title": "O Olho Supremo",
+    "subtitle": "O enigma dos mestres",
+    "chapter": 2,
+    "nodes": [
+      [
+        150,
+        50
+      ],
+      [
+        60,
+        230
+      ],
+      [
+        240,
+        230
+      ],
+      [
+        150,
+        120
+      ],
+      [
+        105,
+        190
+      ],
+      [
+        195,
+        190
+      ],
+      [
+        150,
+        160
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        6,
+        4
+      ],
+      [
+        6,
+        5
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        0,
+        5
+      ]
+    ]
+  },
+  {
+    "id": 21,
+    "title": "O Símbolo do Infinito",
+    "subtitle": "Laço perpétuo",
+    "chapter": 3,
+    "nodes": [
+      [
+        150,
+        150
+      ],
+      [
+        90,
+        100
+      ],
+      [
+        45,
+        150
+      ],
+      [
+        90,
+        200
+      ],
+      [
+        210,
+        100
+      ],
+      [
+        255,
+        150
+      ],
+      [
+        210,
+        200
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        0
+      ]
+    ]
+  },
+  {
+    "id": 22,
+    "title": "A Shuriken Ninja",
+    "subtitle": "Lâminas giratórias",
+    "chapter": 3,
+    "nodes": [
+      [
+        150,
+        150
+      ],
+      [
+        150,
+        40
+      ],
+      [
+        180,
+        110
+      ],
+      [
+        260,
+        150
+      ],
+      [
+        190,
+        180
+      ],
+      [
+        150,
+        260
+      ],
+      [
+        120,
+        190
+      ],
+      [
+        40,
+        150
+      ],
+      [
+        110,
+        120
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        0
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        0
+      ]
+    ]
+  },
+  {
+    "id": 23,
+    "title": "A Mandala Solar",
+    "subtitle": "Raios cósmicos",
+    "chapter": 3,
+    "nodes": [
+      [
+        150,
+        150
+      ],
+      [
+        150,
+        50
+      ],
+      [
+        220,
+        80
+      ],
+      [
+        250,
+        150
+      ],
+      [
+        220,
+        220
+      ],
+      [
+        150,
+        250
+      ],
+      [
+        80,
+        220
+      ],
+      [
+        50,
+        150
+      ],
+      [
+        80,
+        80
+      ]
+    ],
+    "edges": [
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        6,
+        8
+      ],
+      [
+        8,
+        2
+      ]
+    ]
+  },
+  {
+    "id": 24,
+    "title": "A Teia do Destino",
+    "subtitle": "Geometria concêntrica",
+    "chapter": 3,
+    "nodes": [
+      [
+        150,
+        45
+      ],
+      [
+        240,
+        95
+      ],
+      [
+        240,
+        205
+      ],
+      [
+        150,
+        255
+      ],
+      [
+        60,
+        205
+      ],
+      [
+        60,
+        95
+      ],
+      [
+        150,
+        95
+      ],
+      [
+        200,
+        125
+      ],
+      [
+        200,
+        175
+      ],
+      [
+        150,
+        205
+      ],
+      [
+        100,
+        175
+      ],
+      [
+        100,
+        125
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        0
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        11,
+        6
+      ],
+      [
+        0,
+        6
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        2,
+        8
+      ],
+      [
+        3,
+        9
+      ],
+      [
+        4,
+        10
+      ],
+      [
+        5,
+        11
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        2,
+        9
+      ],
+      [
+        3,
+        10
+      ],
+      [
+        4,
+        11
+      ],
+      [
+        5,
+        6
+      ]
+    ]
+  },
+  {
+    "id": 25,
+    "title": "A Triforce Sagrada",
+    "subtitle": "Três triângulos unidos",
+    "chapter": 3,
+    "nodes": [
+      [
+        150,
+        50
+      ],
+      [
+        60,
+        240
+      ],
+      [
+        240,
+        240
+      ],
+      [
+        105,
+        145
+      ],
+      [
+        195,
+        145
+      ],
+      [
+        150,
+        240
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        2,
+        4
+      ]
+    ]
+  },
+  {
+    "id": 26,
+    "title": "O Sino da Meia-Noite",
+    "subtitle": "Ressonância do tempo",
+    "chapter": 3,
+    "nodes": [
+      [
+        150,
+        60
+      ],
+      [
+        110,
+        110
+      ],
+      [
+        190,
+        110
+      ],
+      [
+        70,
+        210
+      ],
+      [
+        230,
+        210
+      ],
+      [
+        110,
+        240
+      ],
+      [
+        190,
+        240
+      ],
+      [
+        150,
+        268
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        5,
+        6
+      ]
+    ]
+  },
+  {
+    "id": 27,
+    "title": "A Joia Octogonal",
+    "subtitle": "Prisma de luz",
+    "chapter": 3,
+    "nodes": [
+      [
+        100,
+        50
+      ],
+      [
+        200,
+        50
+      ],
+      [
+        250,
+        100
+      ],
+      [
+        250,
+        200
+      ],
+      [
+        200,
+        250
+      ],
+      [
+        100,
+        250
+      ],
+      [
+        50,
+        200
+      ],
+      [
+        50,
+        100
+      ],
+      [
+        150,
+        150
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        0
+      ],
+      [
+        8,
+        0
+      ],
+      [
+        8,
+        1
+      ],
+      [
+        8,
+        2
+      ],
+      [
+        8,
+        3
+      ],
+      [
+        8,
+        4
+      ],
+      [
+        8,
+        5
+      ],
+      [
+        8,
+        6
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        6,
+        0
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        4,
+        7
+      ],
+      [
+        6,
+        1
+      ]
+    ]
+  },
+  {
+    "id": 28,
+    "title": "O Escaravelho Sagrado",
+    "subtitle": "Amuleto dos faraós",
+    "chapter": 3,
+    "nodes": [
+      [
+        150,
+        50
+      ],
+      [
+        110,
+        90
+      ],
+      [
+        190,
+        90
+      ],
+      [
+        100,
+        150
+      ],
+      [
+        200,
+        150
+      ],
+      [
+        100,
+        230
+      ],
+      [
+        200,
+        230
+      ],
+      [
+        150,
+        260
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        6,
+        7
+      ]
+    ]
+  },
+  {
+    "id": 29,
+    "title": "A Rosa dos Ventos",
+    "subtitle": "Guia dos navegantes",
+    "chapter": 3,
+    "nodes": [
+      [
+        150,
+        40
+      ],
+      [
+        260,
+        150
+      ],
+      [
+        150,
+        260
+      ],
+      [
+        40,
+        150
+      ],
+      [
+        225,
+        75
+      ],
+      [
+        225,
+        225
+      ],
+      [
+        75,
+        225
+      ],
+      [
+        75,
+        75
+      ],
+      [
+        150,
+        150
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        4
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        6,
+        3
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        7,
+        0
+      ],
+      [
+        8,
+        0
+      ],
+      [
+        8,
+        1
+      ],
+      [
+        8,
+        2
+      ],
+      [
+        8,
+        3
+      ],
+      [
+        8,
+        4
+      ],
+      [
+        8,
+        5
+      ],
+      [
+        8,
+        6
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        1,
+        6
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        3,
+        4
+      ]
+    ]
+  },
+  {
+    "id": 30,
+    "title": "O Hipercubo 4D",
+    "subtitle": "Projeção dimensional",
+    "chapter": 3,
+    "nodes": [
+      [
+        60,
+        60
+      ],
+      [
+        240,
+        60
+      ],
+      [
+        240,
+        240
+      ],
+      [
+        60,
+        240
+      ],
+      [
+        110,
+        110
+      ],
+      [
+        190,
+        110
+      ],
+      [
+        190,
+        190
+      ],
+      [
+        110,
+        190
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        1,
+        6
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        3,
+        4
+      ]
+    ]
+  },
+  {
+    "id": 31,
+    "title": "O Portal Estelar",
+    "subtitle": "Convergência quântica",
+    "chapter": 4,
+    "nodes": [
+      [
+        150,
+        50
+      ],
+      [
+        235,
+        100
+      ],
+      [
+        235,
+        200
+      ],
+      [
+        150,
+        250
+      ],
+      [
+        65,
+        200
+      ],
+      [
+        65,
+        100
+      ],
+      [
+        150,
+        110
+      ],
+      [
+        177,
+        151
+      ],
+      [
+        123,
+        151
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        0
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        6
+      ],
+      [
+        0,
+        6
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        4,
+        8
+      ],
+      [
+        5,
+        8
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        3,
+        5
+      ]
+    ]
+  },
+  {
+    "id": 32,
+    "title": "A Harpa Celestial",
+    "subtitle": "Cordas sonoras",
+    "chapter": 4,
+    "nodes": [
+      [
+        150,
+        50
+      ],
+      [
+        70,
+        140
+      ],
+      [
+        230,
+        140
+      ],
+      [
+        70,
+        240
+      ],
+      [
+        230,
+        240
+      ],
+      [
+        150,
+        240
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        4
+      ]
+    ]
+  },
+  {
+    "id": 33,
+    "title": "A Serpente Alada",
+    "subtitle": "Espirais ancestrais",
+    "chapter": 4,
+    "nodes": [
+      [
+        70,
+        70
+      ],
+      [
+        150,
+        70
+      ],
+      [
+        230,
+        70
+      ],
+      [
+        70,
+        150
+      ],
+      [
+        150,
+        150
+      ],
+      [
+        230,
+        150
+      ],
+      [
+        70,
+        230
+      ],
+      [
+        150,
+        230
+      ],
+      [
+        230,
+        230
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        5,
+        8
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        6,
+        3
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        4,
+        7
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        4,
+        8
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        8,
+        3
+      ],
+      [
+        6,
+        1
+      ]
+    ]
+  },
+  {
+    "id": 34,
+    "title": "O Cronômetro Arcano",
+    "subtitle": "Areias do destino",
+    "chapter": 4,
+    "nodes": [
+      [
+        70,
+        60
+      ],
+      [
+        230,
+        60
+      ],
+      [
+        110,
+        110
+      ],
+      [
+        190,
+        110
+      ],
+      [
+        150,
+        150
+      ],
+      [
+        110,
+        190
+      ],
+      [
+        190,
+        190
+      ],
+      [
+        70,
+        240
+      ],
+      [
+        230,
+        240
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        6,
+        8
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        8,
+        5
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        1,
+        8
+      ]
+    ]
+  },
+  {
+    "id": 35,
+    "title": "A Árvore da Vida",
+    "subtitle": "Sefirot sagrada",
+    "chapter": 4,
+    "nodes": [
+      [
+        150,
+        45
+      ],
+      [
+        90,
+        95
+      ],
+      [
+        210,
+        95
+      ],
+      [
+        90,
+        160
+      ],
+      [
+        210,
+        160
+      ],
+      [
+        150,
+        160
+      ],
+      [
+        90,
+        225
+      ],
+      [
+        210,
+        225
+      ],
+      [
+        150,
+        260
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        4,
+        7
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        6,
+        5
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        6,
+        8
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        5,
+        8
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        4,
+        6
+      ]
+    ]
+  },
+  {
+    "id": 36,
+    "title": "A Caravela dos Mares",
+    "subtitle": "Três mastros e velas",
+    "chapter": 4,
+    "nodes": [
+      [
+        90,
+        60
+      ],
+      [
+        150,
+        45
+      ],
+      [
+        210,
+        60
+      ],
+      [
+        90,
+        140
+      ],
+      [
+        150,
+        140
+      ],
+      [
+        210,
+        140
+      ],
+      [
+        50,
+        210
+      ],
+      [
+        250,
+        210
+      ],
+      [
+        90,
+        250
+      ],
+      [
+        210,
+        250
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        6,
+        3
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        9,
+        8
+      ],
+      [
+        8,
+        6
+      ],
+      [
+        6,
+        9
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        3,
+        8
+      ]
+    ]
+  },
+  {
+    "id": 37,
+    "title": "O Prisma Cristalino",
+    "subtitle": "Poliedro estelar",
+    "chapter": 4,
+    "nodes": [
+      [
+        150,
+        40
+      ],
+      [
+        60,
+        110
+      ],
+      [
+        150,
+        125
+      ],
+      [
+        240,
+        110
+      ],
+      [
+        60,
+        210
+      ],
+      [
+        150,
+        225
+      ],
+      [
+        240,
+        210
+      ],
+      [
+        150,
+        265
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        4
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        6,
+        1
+      ]
+    ]
+  },
+  {
+    "id": 38,
+    "title": "A Fênix Lendária",
+    "subtitle": "Chamas perpétuas",
+    "chapter": 4,
+    "nodes": [
+      [
+        150,
+        50
+      ],
+      [
+        110,
+        80
+      ],
+      [
+        190,
+        80
+      ],
+      [
+        40,
+        110
+      ],
+      [
+        260,
+        110
+      ],
+      [
+        50,
+        180
+      ],
+      [
+        250,
+        180
+      ],
+      [
+        150,
+        160
+      ],
+      [
+        105,
+        240
+      ],
+      [
+        195,
+        240
+      ],
+      [
+        150,
+        270
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        4,
+        7
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        5,
+        8
+      ],
+      [
+        6,
+        9
+      ],
+      [
+        8,
+        10
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        7,
+        9
+      ]
+    ]
+  },
+  {
+    "id": 39,
+    "title": "O Labirinto Mítico",
+    "subtitle": "Espirais concêntricas",
+    "chapter": 4,
+    "nodes": [
+      [
+        50,
+        50
+      ],
+      [
+        250,
+        50
+      ],
+      [
+        250,
+        250
+      ],
+      [
+        50,
+        250
+      ],
+      [
+        90,
+        90
+      ],
+      [
+        210,
+        90
+      ],
+      [
+        210,
+        210
+      ],
+      [
+        90,
+        210
+      ],
+      [
+        130,
+        130
+      ],
+      [
+        170,
+        130
+      ],
+      [
+        170,
+        170
+      ],
+      [
+        130,
+        170
+      ],
+      [
+        150,
+        150
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        11,
+        8
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        4,
+        8
+      ],
+      [
+        5,
+        9
+      ],
+      [
+        6,
+        10
+      ],
+      [
+        7,
+        11
+      ],
+      [
+        8,
+        12
+      ],
+      [
+        9,
+        12
+      ],
+      [
+        10,
+        12
+      ],
+      [
+        11,
+        12
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        5,
+        2
+      ]
+    ]
+  },
+  {
+    "id": 40,
+    "title": "O Selo dos 1000 Anos",
+    "subtitle": "A coroação do grão-mestre",
+    "chapter": 4,
+    "nodes": [
+      [
+        150,
+        35
+      ],
+      [
+        231,
+        69
+      ],
+      [
+        265,
+        150
+      ],
+      [
+        231,
+        231
+      ],
+      [
+        150,
+        265
+      ],
+      [
+        69,
+        231
+      ],
+      [
+        35,
+        150
+      ],
+      [
+        69,
+        69
+      ],
+      [
+        174,
+        93
+      ],
+      [
+        207,
+        126
+      ],
+      [
+        207,
+        174
+      ],
+      [
+        174,
+        207
+      ],
+      [
+        126,
+        207
+      ],
+      [
+        93,
+        174
+      ],
+      [
+        93,
+        126
+      ],
+      [
+        126,
+        93
+      ]
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        0
+      ],
+      [
+        0,
+        8
+      ],
+      [
+        0,
+        15
+      ],
+      [
+        1,
+        9
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        2,
+        10
+      ],
+      [
+        2,
+        9
+      ],
+      [
+        3,
+        11
+      ],
+      [
+        3,
+        10
+      ],
+      [
+        4,
+        12
+      ],
+      [
+        4,
+        11
+      ],
+      [
+        5,
+        13
+      ],
+      [
+        5,
+        12
+      ],
+      [
+        6,
+        14
+      ],
+      [
+        6,
+        13
+      ],
+      [
+        7,
+        15
+      ],
+      [
+        7,
+        14
+      ],
+      [
+        8,
+        10
+      ],
+      [
+        10,
+        12
+      ],
+      [
+        12,
+        14
+      ],
+      [
+        14,
+        8
+      ],
+      [
+        9,
+        11
+      ],
+      [
+        11,
+        13
+      ],
+      [
+        13,
+        15
+      ],
+      [
+        15,
+        9
+      ]
+    ]
+  }
+];
+
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.fxEnabled = true;
+        this.musicEnabled = false;
+        this.musicInterval = null;
+        this.musicStep = 0;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playTone(freq, type = 'sine', duration = 0.15, volume = 0.2) {
+        if (!this.fxEnabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+      }
+      nodeConnect(stepIndex) {
+        const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51, 1567.98];
+        const freq = scale[stepIndex % scale.length];
+        this.playTone(freq, 'triangle', 0.2, 0.25);
+        if (navigator.vibrate) navigator.vibrate(25);
+      }
+      error() {
+        this.playTone(130, 'sawtooth', 0.18, 0.16);
+        if (navigator.vibrate) navigator.vibrate([35, 25, 35]);
+      }
+      victory() {
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => this.playTone(freq, 'sine', 0.32, 0.28), idx * 100);
+        });
+        if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
+      }
+      rewardChime() {
+        // Som alegre de moedas / desbloqueio de recompensa
+        const notes = [440, 554.37, 659.25, 880];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => this.playTone(freq, 'triangle', 0.18, 0.25), idx * 75);
+        });
+        if (navigator.vibrate) navigator.vibrate([30, 20, 40]);
+      }
+      toggleMusic() {
+        this.musicEnabled = !this.musicEnabled;
+        if (this.musicEnabled) {
+          this.init();
+          this.startAmbientMusic();
+        } else {
+          this.stopAmbientMusic();
+        }
+        return this.musicEnabled;
+      }
+      startAmbientMusic() {
+        this.stopAmbientMusic();
+        const chords = [
+          [261.63, 329.63, 392.00],
+          [220.00, 261.63, 329.63],
+          [174.61, 220.00, 261.63],
+          [196.00, 246.94, 293.66]
+        ];
+        this.musicInterval = setInterval(() => {
+          if (!this.musicEnabled || !this.ctx) return;
+          const chord = chords[this.musicStep % chords.length];
+          this.musicStep++;
+          chord.forEach(freq => {
+            try {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+              gain.gain.setValueAtTime(0.015, this.ctx.currentTime);
+              gain.gain.linearRampToValueAtTime(0.045, this.ctx.currentTime + 0.8);
+              gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 3.2);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start();
+              osc.stop(this.ctx.currentTime + 3.4);
+            } catch(e) {}
+          });
+        }, 3200);
+      }
+      stopAmbientMusic() {
+        if (this.musicInterval) {
+          clearInterval(this.musicInterval);
+          this.musicInterval = null;
+        }
+      }
+    }
+    const sound = new SoundEngine();
+
+    // --- GAME STATE ---
+    let currentLevelIndex = 0;
+    let selectedChapter = 1;
+    let drawnEdges = new Set();
+    let pathHistory = [];
+    let isDragging = false;
+    let activeNode = null;
+    let hintsUsed = 0;
+    let timerSeconds = 0;
+    let timerInterval = null;
+    let savedProgress = {};
+
+    // --- SISTEMA DE DICAS LIMITADAS E ANÚNCIOS PREMIADOS ---
+    const MAX_HINTS_PER_LEVEL = 3;
+    let levelHintsCount = 0; // 0 = grátis, 1 = requer ad 1, 2 = requer ad 2, 3 = esgotado
+    let isAdPlaying = false;
+    let adCountdown = 5;
+    let adInterval = null;
+
+    const MOCK_ADS = [
+      { title: "Hero Quest: Arena 3D", desc: "O melhor RPG tático mobile do ano! Conquiste reinos e vença batalhas épicas.", icon: "⚔️", color: "from-indigo-500 to-purple-600" },
+      { title: "Galaxy Drift: Cyber Racer", desc: "Corridas de alta velocidade no espaço! Gráficos neon em 120 FPS.", icon: "🚀", color: "from-cyan-500 to-blue-600" },
+      { title: "Brain Master: Block Puzzle", desc: "Treine seu raciocínio diário com desafios relaxantes de lógica.", icon: "🧩", color: "from-amber-500 to-rose-600" }
+    ];
+
+    function loadSave() {
+      try {
+        const data = localStorage.getItem('brain_dots_save');
+        if (data) savedProgress = JSON.parse(data);
+      } catch(e) {}
+      if (!savedProgress.unlocked) savedProgress.unlocked = 1;
+      if (!savedProgress.stars) savedProgress.stars = {};
+      if (!savedProgress.theme) savedProgress.theme = 'theme-cyber';
+      applyTheme(savedProgress.theme);
+    }
+
+    function saveGame() {
+      try {
+        localStorage.setItem('brain_dots_save', JSON.stringify(savedProgress));
+      } catch(e) {}
+    }
+
+    function applyTheme(themeName) {
+      savedProgress.theme = themeName;
+      document.getElementById('body-root').className = `${themeName} bg-[#090d16] text-slate-100 flex items-center justify-center p-0 sm:p-2 overflow-hidden select-none min-h-screen`;
+      
+      const container = document.getElementById('game-container');
+      if (themeName === 'theme-paper') {
+        container.style.backgroundColor = '#ffffff';
+        container.classList.add('paper-grid');
+      } else if (themeName === 'theme-zen') {
+        container.style.backgroundColor = '#18181b';
+        container.classList.remove('paper-grid');
+      } else {
+        container.style.backgroundColor = '#0c1322';
+        container.classList.remove('paper-grid');
+      }
+
+      document.querySelectorAll('.theme-opt').forEach(btn => {
+        const t = btn.getAttribute('data-theme');
+        btn.querySelector('span:last-child').innerText = (t === themeName) ? '✔' : '';
+      });
+      saveGame();
+      updateNodeStyles();
+    }
+
+    function edgeKey(u, v) {
+      return u < v ? `${u}-${v}` : `${v}-${u}`;
+    }
+
+    function getLevel() {
+      return LEVELS[currentLevelIndex];
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerSeconds = 0;
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        timerSeconds++;
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+      const secs = (timerSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('timer-display').innerText = `${mins}:${secs}`;
+    }
+
+    function initLevel(lvlIndex) {
+      currentLevelIndex = lvlIndex;
+      drawnEdges.clear();
+      pathHistory = [];
+      activeNode = null;
+      hintsUsed = 0;
+      levelHintsCount = 0;
+      isDragging = false;
+      updateHintButtonState();
+
+      const lvl = getLevel();
+      document.getElementById('level-indicator').innerText = `Nível ${lvl.id} / ${LEVELS.length}`;
+      document.getElementById('chapter-badge').innerText = `Cap. ${lvl.chapter || 1}`;
+      document.getElementById('level-title').innerText = lvl.title;
+      document.getElementById('level-subtitle').innerText = lvl.subtitle;
+      document.getElementById('outside-badge').classList.toggle('hidden', lvl.id !== 11);
+      document.getElementById('box-guide').classList.toggle('hidden', lvl.id !== 11);
+      document.getElementById('status-toast').innerHTML = 'Arraste o dedo ou toque de ponto em ponto para começar!';
+
+      updateProgressCounter();
+      renderSVG();
+      clearHints();
+      hideDragLine();
+      startTimer();
+      document.getElementById('btn-undo').disabled = true;
+    }
+
+    function updateProgressCounter() {
+      const lvl = getLevel();
+      document.getElementById('progress-indicator').innerText = `${drawnEdges.size} / ${lvl.edges.length}`;
+    }
+
+    function renderSVG() {
+      const lvl = getLevel();
+      const silLayer = document.getElementById('silhouette-layer');
+      const drawnLayer = document.getElementById('drawn-layer');
+      const nodesLayer = document.getElementById('nodes-layer');
+
+      silLayer.innerHTML = '';
+      drawnLayer.innerHTML = '';
+      nodesLayer.innerHTML = '';
+
+      lvl.edges.forEach((e) => {
+        const [u, v] = e;
+        const [x1, y1] = lvl.nodes[u];
+        const [x2, y2] = lvl.nodes[v];
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', savedProgress.theme === 'theme-paper' ? '#94a3b8' : '#334155');
+        line.setAttribute('stroke-width', '4');
+        line.setAttribute('stroke-dasharray', '5 4');
+        line.setAttribute('stroke-linecap', 'round');
+        line.setAttribute('opacity', savedProgress.theme === 'theme-paper' ? '0.45' : '0.65');
+        silLayer.appendChild(line);
+      });
+
+      lvl.nodes.forEach((pos, idx) => {
+        const [x, y] = pos;
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('id', `node-g-${idx}`);
+        g.setAttribute('data-node', `${idx}`);
+        g.setAttribute('transform', `translate(${x}, ${y})`);
+        g.setAttribute('class', 'cursor-pointer select-none');
+
+        const hitArea = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        hitArea.setAttribute('r', '27');
+        hitArea.setAttribute('fill', 'transparent');
+        hitArea.setAttribute('class', 'cursor-pointer');
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('id', `node-circle-${idx}`);
+        circle.setAttribute('r', '9');
+        circle.setAttribute('fill', '#ef4444');
+        circle.setAttribute('stroke', '#ffffff');
+        circle.setAttribute('stroke-width', '2');
+        circle.setAttribute('class', 'glow-dot transition-all duration-200');
+
+        g.appendChild(hitArea);
+        g.appendChild(circle);
+        nodesLayer.appendChild(g);
+      });
+
+      updateNodeStyles();
+    }
+
+    function updateNodeStyles() {
+      const lvl = getLevel();
+      const theme = savedProgress.theme || 'theme-cyber';
+      const activeColor = theme === 'theme-zen' ? '#fbbf24' : '#f59e0b';
+      const connectedColor = theme === 'theme-paper' ? '#2563eb' : (theme === 'theme-zen' ? '#ec4899' : '#06b6d4');
+      const dotColor = theme === 'theme-paper' ? '#dc2626' : '#ef4444';
+
+      lvl.nodes.forEach((_, idx) => {
+        const c = document.getElementById(`node-circle-${idx}`);
+        if (!c) return;
+        if (activeNode === idx) {
+          c.setAttribute('fill', activeColor);
+          c.setAttribute('r', '12');
+          c.setAttribute('stroke', '#ffffff');
+          c.setAttribute('stroke-width', '3');
+          c.setAttribute('class', 'glow-amber');
+        } else if (pathHistory.includes(idx)) {
+          c.setAttribute('fill', connectedColor);
+          c.setAttribute('r', '9');
+          c.setAttribute('stroke', '#ffffff');
+          c.setAttribute('stroke-width', '2');
+          c.setAttribute('class', 'glow-cyan');
+        } else {
+          c.setAttribute('fill', dotColor);
+          c.setAttribute('r', '9');
+          c.setAttribute('stroke', '#ffffff');
+          c.setAttribute('stroke-width', '2');
+          c.setAttribute('class', 'glow-dot');
+        }
+      });
+    }
+
+    function connectEdge(u, v) {
+      const lvl = getLevel();
+      const k = edgeKey(u, v);
+
+      // Verificação geométrica de colisão com nós intermediários
+      const [x1, y1] = lvl.nodes[u];
+      const [x2, y2] = lvl.nodes[v];
+      for (let w = 0; w < lvl.nodes.length; w++) {
+        if (w !== u && w !== v) {
+          const [wx, wy] = lvl.nodes[w];
+          const l2 = (x2 - x1)**2 + (y2 - y1)**2;
+          if (l2 > 0) {
+            const t = Math.max(0, Math.min(1, ((wx - x1)*(x2 - x1) + (wy - y1)*(y2 - y1)) / l2));
+            const projX = x1 + t * (x2 - x1);
+            const projY = y1 + t * (y2 - y1);
+            const dist = Math.hypot(wx - projX, wy - projY);
+            if (dist < 12 && t > 0.08 && t < 0.92) {
+              sound.error();
+              showToast('Não é permitido atravessar por cima de pontos intermediários!', 'text-rose-400 font-semibold');
+              return false;
+            }
+          }
+        }
+      }
+
+      const exists = lvl.edges.some(e => (e[0] === u && e[1] === v) || (e[0] === v && e[1] === u));
+      if (!exists) {
+        sound.error();
+        showToast('Não há reta conectando esses pontos!', 'text-rose-400');
+        return false;
+      }
+
+      if (drawnEdges.has(k)) {
+        sound.error();
+        showToast('Esta reta já foi desenhada! Não pode repetir.', 'text-amber-400');
+        return false;
+      }
+
+      drawnEdges.add(k);
+      pathHistory.push(v);
+      activeNode = v;
+
+      const theme = savedProgress.theme || 'theme-cyber';
+      const lineColor = theme === 'theme-paper' ? '#2563eb' : (theme === 'theme-zen' ? '#ec4899' : '#06b6d4');
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('id', `drawn-${k}`);
+      line.setAttribute('x1', x1);
+      line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2);
+      line.setAttribute('y2', y2);
+      line.setAttribute('stroke', lineColor);
+      line.setAttribute('stroke-width', '4.5');
+      line.setAttribute('stroke-linecap', 'round');
+      line.setAttribute('class', 'glow-cyan');
+      document.getElementById('drawn-layer').appendChild(line);
+
+      sound.nodeConnect(drawnEdges.size);
+      clearHints();
+      updateNodeStyles();
+      updateProgressCounter();
+      document.getElementById('btn-undo').disabled = false;
+
+      if (drawnEdges.size === lvl.edges.length) {
+        handleVictory();
+      } else {
+        showToast(`Reta traçada! Continue (${drawnEdges.size}/${lvl.edges.length})`, 'text-cyan-400');
+      }
+
+      return true;
+    }
+
+    function handleVictory() {
+      clearInterval(timerInterval);
+      sound.victory();
+      showToast('Desafio Concluído com Sucesso!', 'text-emerald-400 font-bold');
+
+      const stars = hintsUsed === 0 ? 3 : (hintsUsed === 1 ? 2 : 1);
+      const lvlId = getLevel().id;
+      savedProgress.stars[lvlId] = Math.max(savedProgress.stars[lvlId] || 0, stars);
+      if (savedProgress.unlocked <= lvlId && lvlId < LEVELS.length) {
+        savedProgress.unlocked = lvlId + 1;
+      }
+      saveGame();
+
+      setTimeout(() => {
+        const modal = document.getElementById('modal-victory');
+        modal.classList.remove('hidden');
+
+        const s1 = document.getElementById('star-1');
+        const s2 = document.getElementById('star-2');
+        const s3 = document.getElementById('star-3');
+        [s1, s2, s3].forEach(s => { s.className = 'text-2xl opacity-30'; });
+
+        setTimeout(() => { if (stars >= 1) s1.className = 'text-2xl text-amber-400 star-pop'; }, 100);
+        setTimeout(() => { if (stars >= 2) s2.className = 'text-3xl text-amber-400 star-pop'; }, 300);
+        setTimeout(() => { if (stars >= 3) s3.className = 'text-2xl text-amber-400 star-pop'; }, 500);
+
+        document.getElementById('victory-subtitle').innerText = 
+          stars === 3 ? 'Perfeito! Traço único sem usar nenhuma dica!' :
+          (stars === 2 ? 'Muito bem! Você usou 1 dica.' : 'Concluído! Tente sem dicas para 3 estrelas.');
+
+        document.getElementById('btn-next-level').style.display = 
+          currentLevelIndex < LEVELS.length - 1 ? 'block' : 'none';
+      }, 500);
+    }
+
+    function undoStep() {
+      if (pathHistory.length <= 1) {
+        initLevel(currentLevelIndex);
+        return;
+      }
+      const lastNode = pathHistory.pop();
+      const prevNode = pathHistory[pathHistory.length - 1];
+      const k = edgeKey(prevNode, lastNode);
+      drawnEdges.delete(k);
+
+      const lineEl = document.getElementById(`drawn-${k}`);
+      if (lineEl) lineEl.remove();
+
+      activeNode = prevNode;
+      clearHints();
+      updateNodeStyles();
+      updateProgressCounter();
+      document.getElementById('btn-undo').disabled = pathHistory.length <= 1;
+      showToast('Passo desfeito.', 'text-slate-400');
+    }
+
+    function showToast(msg, colorClass = 'text-slate-300') {
+      const t = document.getElementById('status-toast');
+      t.className = `text-center text-[11px] py-1 px-2.5 rounded-lg bg-slate-800/80 border border-slate-700/60 ${colorClass} truncate`;
+      t.innerText = msg;
+    }
+
+    const svg = document.getElementById('game-svg');
+    const dragLine = document.getElementById('drag-line');
+
+    function getSVGCoords(e) {
+      const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+      const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+      
+      const pt = svg.createSVGPoint();
+      pt.x = clientX;
+      pt.y = clientY;
+      
+      const ctm = svg.getScreenCTM();
+      if (ctm) {
+        const p = pt.matrixTransform(ctm.inverse());
+        return [p.x, p.y];
+      }
+      const rect = svg.getBoundingClientRect();
+      return [
+        ((clientX - rect.left) / (rect.width || 1)) * 300,
+        ((clientY - rect.top) / (rect.height || 1)) * 300
+      ];
+    }
+
+    function findNearestNode(x, y, maxDist = 34) {
+      const lvl = getLevel();
+      let best = null;
+      let minD = maxDist;
+      for (let i = 0; i < lvl.nodes.length; i++) {
+        const [nx, ny] = lvl.nodes[i];
+        const dist = Math.hypot(x - nx, y - ny);
+        if (dist < minD) {
+          minD = dist;
+          best = i;
+        }
+      }
+      return best;
+    }
+
+    function onPointerDown(e) {
+      e.preventDefault();
+      sound.init();
+      
+      let hit = null;
+      if (e.target && e.target.closest) {
+        const nodeEl = e.target.closest('[data-node]');
+        if (nodeEl) {
+          hit = parseInt(nodeEl.getAttribute('data-node'), 10);
+        }
+      }
+      
+      if (hit === null) {
+        const [x, y] = getSVGCoords(e);
+        hit = findNearestNode(x, y);
+      }
+
+      if (hit !== null) {
+        if (activeNode === null) {
+          activeNode = hit;
+          pathHistory.push(hit);
+          updateNodeStyles();
+          sound.playTone(261.63, 'sine', 0.15, 0.2);
+          showToast('Ponto inicial escolhido! Agora arraste para o próximo.', 'text-cyan-400');
+        } else if (activeNode !== hit) {
+          connectEdge(activeNode, hit);
+        }
+        isDragging = true;
+      } else if (activeNode !== null) {
+        isDragging = true;
+      }
+    }
+
+    function onPointerMove(e) {
+      if (!isDragging || activeNode === null) return;
+      e.preventDefault();
+      const [x, y] = getSVGCoords(e);
+      const lvl = getLevel();
+      const [startX, startY] = lvl.nodes[activeNode];
+
+      const theme = savedProgress.theme || 'theme-cyber';
+      dragLine.setAttribute('stroke', theme === 'theme-paper' ? '#2563eb' : (theme === 'theme-zen' ? '#ec4899' : '#06b6d4'));
+      dragLine.setAttribute('x1', startX);
+      dragLine.setAttribute('y1', startY);
+      dragLine.setAttribute('x2', x);
+      dragLine.setAttribute('y2', y);
+      dragLine.setAttribute('opacity', '0.85');
+
+      const target = findNearestNode(x, y, 28);
+      if (target !== null && target !== activeNode) {
+        const success = connectEdge(activeNode, target);
+        if (success) {
+          const [nx, ny] = lvl.nodes[activeNode];
+          dragLine.setAttribute('x1', nx);
+          dragLine.setAttribute('y1', ny);
+        } else {
+          // Bloqueia insistir e atravessar pontos inválidos ou já concluídos!
+          isDragging = false;
+          hideDragLine();
+        }
+      }
+    }
+
+    function onPointerUp(e) {
+      isDragging = false;
+      hideDragLine();
+    }
+
+    function hideDragLine() {
+      dragLine.setAttribute('opacity', '0');
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
+
+    function updateHintButtonState() {
+      const btn = document.getElementById('btn-hint');
+      const text = document.getElementById('hint-btn-text');
+      if (levelHintsCount === 0) {
+        btn.disabled = false;
+        btn.className = "flex-1 py-1.5 px-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold flex items-center justify-center gap-1 transition-transform active:scale-95";
+        text.innerText = "Dica (1/3 Grátis)";
+      } else if (levelHintsCount === 1) {
+        btn.disabled = false;
+        btn.className = "flex-1 py-1.5 px-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-semibold flex items-center justify-center gap-1 transition-transform active:scale-95";
+        text.innerText = "Dica (2/3 🎬 Ad)";
+      } else if (levelHintsCount === 2) {
+        btn.disabled = false;
+        btn.className = "flex-1 py-1.5 px-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-semibold flex items-center justify-center gap-1 transition-transform active:scale-95";
+        text.innerText = "Dica (3/3 🎬 Ad)";
+      } else {
+        btn.disabled = true;
+        btn.className = "flex-1 py-1.5 px-2 rounded-xl bg-slate-800/40 border border-slate-700/40 text-slate-500 text-xs font-semibold flex items-center justify-center gap-1 cursor-not-allowed opacity-50";
+        text.innerText = "Sem Dicas (3/3)";
+      }
+    }
+
+    // --- CONTROLADOR DE ANÚNCIOS PREMIADOS ---
+    function showRewardedAd(onRewarded, onCancel) {
+      isAdPlaying = true;
+      adCountdown = 5;
+      
+      const modal = document.getElementById('modal-rewarded-ad');
+      const timerBadge = document.getElementById('ad-timer-badge');
+      const progressBar = document.getElementById('ad-progress-bar');
+      const label = document.getElementById('ad-reward-label');
+      const statusMsg = document.getElementById('ad-status-msg');
+      
+      // Escolhe criativo aleatório
+      const creative = MOCK_ADS[Math.floor(Math.random() * MOCK_ADS.length)];
+      document.getElementById('ad-game-title').innerText = creative.title;
+      document.getElementById('ad-game-desc').innerText = creative.desc;
+
+      label.innerText = `Dica ${levelHintsCount + 1} de ${MAX_HINTS_PER_LEVEL}`;
+      timerBadge.innerText = `Recompensa em ${adCountdown}s`;
+      timerBadge.className = "text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-cyan-400";
+      progressBar.style.width = "0%";
+      statusMsg.innerText = "Aguarde 5s para desbloquear...";
+      statusMsg.className = "text-cyan-400 font-medium";
+
+      modal.classList.remove('hidden');
+
+      // Animação da barra de progresso
+      setTimeout(() => {
+        progressBar.style.width = "100%";
+      }, 50);
+
+      clearInterval(adInterval);
+      adInterval = setInterval(() => {
+        adCountdown--;
+        if (adCountdown > 0) {
+          timerBadge.innerText = `Recompensa em ${adCountdown}s`;
+        } else {
+          clearInterval(adInterval);
+          adInterval = null;
+          isAdPlaying = false;
+          timerBadge.innerText = "✔ Recompensa Pronta!";
+          timerBadge.className = "text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400";
+          statusMsg.innerText = "Recompensa concedida! Fechando...";
+          statusMsg.className = "text-emerald-400 font-bold";
+          sound.rewardChime();
+
+          setTimeout(() => {
+            modal.classList.add('hidden');
+            if (onRewarded) onRewarded();
+          }, 800);
+        }
+      }, 1000);
+
+      // Botão fechar
+      document.getElementById('btn-close-ad').onclick = () => {
+        if (adCountdown > 0) {
+          if (confirm("Fechar anúncio agora? Você só receberá a dica se assistir até o final.")) {
+            clearInterval(adInterval);
+            adInterval = null;
+            isAdPlaying = false;
+            modal.classList.add('hidden');
+            showToast("Anúncio cancelado. Assista até o fim para ganhar a dica.", "text-amber-400");
+            if (onCancel) onCancel();
+          }
+        } else {
+          modal.classList.add('hidden');
+          if (onRewarded) onRewarded();
+        }
+      };
+    }
+
+    function clearHints() {
+      document.getElementById('hint-layer').innerHTML = '';
+    }
+
+    function requestHint() {
+      sound.init();
+
+      if (levelHintsCount >= MAX_HINTS_PER_LEVEL) {
+        showToast("Você já utilizou todas as 3 dicas desta fase!", "text-amber-400 font-semibold");
+        sound.error();
+        return;
+      }
+
+      if (levelHintsCount === 0) {
+        // 1ª DICA: GRÁTIS!
+        levelHintsCount++;
+        hintsUsed++;
+        updateHintButtonState();
+        executeHint();
+        showToast("Dica 1 liberada gratuitamente! (Restam 2 com anúncio)", "text-amber-400");
+      } else {
+        // 2ª e 3ª DICA: REQUER ANÚNCIO PREMIADO!
+        showRewardedAd(() => {
+          levelHintsCount++;
+          hintsUsed++;
+          updateHintButtonState();
+          executeHint();
+          showToast(`Dica ${levelHintsCount} desbloqueada após o anúncio!`, "text-emerald-400 font-semibold");
+        });
+      }
+    }
+
+    function executeHint() {
+      sound.init();
+      hintsUsed++;
+      const lvl = getLevel();
+      const hintLayer = document.getElementById('hint-layer');
+      hintLayer.innerHTML = '';
+
+      if (activeNode === null) {
+        const deg = {};
+        lvl.edges.forEach(([u, v]) => {
+          deg[u] = (deg[u] || 0) + 1;
+          deg[v] = (deg[v] || 0) + 1;
+        });
+        const oddNodes = Object.keys(deg).filter(k => deg[k] % 2 !== 0).map(Number);
+        const candidates = oddNodes.length === 2 ? oddNodes : Object.keys(deg).map(Number);
+
+        candidates.forEach(nodeIdx => {
+          const [x, y] = lvl.nodes[nodeIdx];
+          const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          ring.setAttribute('cx', x);
+          ring.setAttribute('cy', y);
+          ring.setAttribute('fill', 'none');
+          ring.setAttribute('stroke', '#f59e0b');
+          ring.setAttribute('stroke-width', '3');
+          ring.setAttribute('class', 'hint-pulse');
+          hintLayer.appendChild(ring);
+        });
+
+        if (oddNodes.length === 2) {
+          showToast('Dica: Esta figura exige começar em um dos pontos destacados!', 'text-amber-400 font-semibold');
+        } else {
+          showToast('Dica: Você pode começar em qualquer ponto!', 'text-amber-400');
+        }
+        sound.playTone(440, 'sine', 0.2, 0.2);
+        return;
+      }
+
+      const remainingEdges = lvl.edges.map((e, idx) => ({ u: e[0], v: e[1], id: idx }))
+        .filter(e => !drawnEdges.has(edgeKey(e.u, e.v)));
+
+      const adj = [];
+      remainingEdges.forEach(e => {
+        if (e.u === activeNode) adj.push({ next: e.v, edge: e });
+        else if (e.v === activeNode) adj.push({ next: e.u, edge: e });
+      });
+
+      if (adj.length === 0) {
+        showToast('Sem saída! Use "Desfazer" para voltar.', 'text-rose-400 font-semibold');
+        sound.error();
+        return;
+      }
+
+      let bestMove = null;
+      for (let cand of adj) {
+        const visited = new Set([cand.edge.id]);
+        function dfs(curr) {
+          if (visited.size === remainingEdges.length) return true;
+          for (let e of remainingEdges) {
+            if (!visited.has(e.id)) {
+              if (e.u === curr) {
+                visited.add(e.id);
+                if (dfs(e.v)) return true;
+                visited.delete(e.id);
+              } else if (e.v === curr) {
+                visited.add(e.id);
+                if (dfs(e.u)) return true;
+                visited.delete(e.id);
+              }
+            }
+          }
+          return false;
+        }
+        if (dfs(cand.next)) {
+          bestMove = cand;
+          break;
+        }
+      }
+
+      if (!bestMove) {
+        showToast('O caminho atual ficou sem saída! Use "Desfazer".', 'text-amber-400 font-semibold');
+        sound.error();
+      } else {
+        const [x1, y1] = lvl.nodes[activeNode];
+        const [x2, y2] = lvl.nodes[bestMove.next];
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', '#f59e0b');
+        line.setAttribute('stroke-width', '4');
+        line.setAttribute('stroke-dasharray', '6 4');
+        line.setAttribute('stroke-linecap', 'round');
+        hintLayer.appendChild(line);
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', x2);
+        circle.setAttribute('cy', y2);
+        circle.setAttribute('fill', 'none');
+        circle.setAttribute('stroke', '#f59e0b');
+        circle.setAttribute('stroke-width', '3');
+        circle.setAttribute('class', 'hint-pulse');
+        hintLayer.appendChild(circle);
+
+        showToast('Dica: Siga a linha dourada para o próximo ponto!', 'text-amber-400 font-semibold');
+        sound.playTone(550, 'triangle', 0.25, 0.25);
+      }
+    }
+
+    function renderLevelsModal() {
+      const grid = document.getElementById('levels-grid');
+      grid.innerHTML = '';
+      let totalStars = 0;
+
+      const chapterStart = (selectedChapter - 1) * 10;
+      const chapterEnd = chapterStart + 10;
+
+      LEVELS.forEach((lvl, idx) => {
+        const stars = savedProgress.stars[lvl.id] || 0;
+        totalStars += stars;
+
+        if (idx >= chapterStart && idx < chapterEnd) {
+          const isUnlocked = idx + 1 <= savedProgress.unlocked;
+          const btn = document.createElement('button');
+          btn.className = `p-1.5 rounded-xl flex flex-col items-center justify-center border transition-all ${
+            idx === currentLevelIndex 
+              ? 'bg-cyan-500/20 border-cyan-500 text-white font-bold'
+              : (isUnlocked 
+                  ? 'bg-slate-800/80 hover:bg-slate-700/80 border-slate-700 text-slate-200' 
+                  : 'bg-slate-900/40 border-slate-800/60 text-slate-600 opacity-60 cursor-not-allowed')
+          }`;
+
+          let starsStr = '';
+          if (isUnlocked) {
+            starsStr = stars > 0 ? '⭐'.repeat(stars) : '☆☆☆';
+          } else {
+            starsStr = '🔒';
+          }
+
+          btn.innerHTML = `
+            <span class="text-[11px] font-mono font-bold">${lvl.id}</span>
+            <span class="text-[8px] mt-0.5">${starsStr}</span>
+          `;
+
+          if (isUnlocked) {
+            btn.addEventListener('click', () => {
+              document.getElementById('modal-levels').classList.add('hidden');
+              initLevel(idx);
+            });
+          }
+          grid.appendChild(btn);
+        }
+      });
+
+      document.getElementById('total-stars-earned').innerText = totalStars;
+
+      document.querySelectorAll('.chap-tab').forEach(tab => {
+        const ch = parseInt(tab.getAttribute('data-chap'), 10);
+        if (ch === selectedChapter) {
+          tab.className = 'chap-tab px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-400 font-bold border border-cyan-500/30 whitespace-nowrap';
+        } else {
+          tab.className = 'chap-tab px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white whitespace-nowrap';
+        }
+      });
+    }
+
+    document.getElementById('btn-hint').addEventListener('click', requestHint);
+    document.getElementById('btn-undo').addEventListener('click', undoStep);
+    document.getElementById('btn-reset').addEventListener('click', () => initLevel(currentLevelIndex));
+
+    document.getElementById('btn-next-level').addEventListener('click', () => {
+      document.getElementById('modal-victory').classList.add('hidden');
+      if (currentLevelIndex < LEVELS.length - 1) {
+        initLevel(currentLevelIndex + 1);
+      }
+    });
+
+    document.getElementById('btn-replay').addEventListener('click', () => {
+      document.getElementById('modal-victory').classList.add('hidden');
+      initLevel(currentLevelIndex);
+    });
+
+    document.getElementById('btn-levels-modal').addEventListener('click', () => {
+      selectedChapter = Math.ceil((currentLevelIndex + 1) / 10);
+      renderLevelsModal();
+      document.getElementById('modal-levels').classList.remove('hidden');
+    });
+
+    document.getElementById('btn-close-levels').addEventListener('click', () => {
+      document.getElementById('modal-levels').classList.add('hidden');
+    });
+
+    document.querySelectorAll('.chap-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        selectedChapter = parseInt(e.target.getAttribute('data-chap'), 10);
+        renderLevelsModal();
+      });
+    });
+
+    document.getElementById('btn-sound').addEventListener('click', () => {
+      sound.fxEnabled = !sound.fxEnabled;
+      document.getElementById('sound-icon').innerText = sound.fxEnabled ? '🔊' : '🔇';
+    });
+
+    document.getElementById('btn-music').addEventListener('click', () => {
+      const on = sound.toggleMusic();
+      document.getElementById('music-icon').innerText = on ? '🎶' : '🎵';
+      showToast(on ? 'Música relaxante ativada' : 'Música desativada', 'text-slate-300');
+    });
+
+    document.getElementById('btn-themes').addEventListener('click', () => {
+      document.getElementById('modal-themes').classList.remove('hidden');
+    });
+
+    document.getElementById('btn-close-themes').addEventListener('click', () => {
+      document.getElementById('modal-themes').classList.add('hidden');
+    });
+
+    document.querySelectorAll('.theme-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.getAttribute('data-theme');
+        applyTheme(t);
+      });
+    });
+
+    document.getElementById('btn-reset-save').addEventListener('click', () => {
+      if (confirm('Deseja reiniciar todo o seu progresso?')) {
+        savedProgress = { unlocked: 1, stars: {}, theme: 'theme-cyber' };
+        saveGame();
+        renderLevelsModal();
+        initLevel(0);
+      }
+    });
+
+    loadSave();
+    initLevel(0);
+  </script>
+</body>
+</html>

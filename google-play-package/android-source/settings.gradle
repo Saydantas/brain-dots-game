@@ -1,0 +1,2 @@
+rootProject.name = "BrainDots"
+include ':app'

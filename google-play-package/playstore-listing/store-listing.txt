@@ -1,0 +1,113 @@
+================================================================================
+FICHA TÉCNICA E METADADOS PARA GOOGLE PLAY CONSOLE
+APLICATIVO: Brain Dots: Traço Único (One Stroke Puzzle)
+================================================================================
+
+1. DETALHES DO APP (APP DETAILS)
+--------------------------------------------------------------------------------
+Nome do App (Title) [Máx 30 caracteres]:
+Brain Dots: Traço Único
+
+Título em Inglês (Opcional):
+Brain Dots: One Stroke Puzzle
+
+Nome do Pacote (Package Name / ApplicationId):
+com.braindots.tracounico
+
+Categoria Principal (Category):
+Jogos > Quebra-cabeça (Games > Puzzle)
+
+Tags / Palavras-chave do Google Play:
+- Quebra-cabeça (Puzzle)
+- Treinamento cerebral (Brain Training)
+- Raciocínio lógico (Logic)
+- Linha única (One line)
+- Casual
+- Offline
+
+Classificação Indicativa (Content Rating):
+Livre / Classificação Livre (PEGI 3 / ESRB Everyone)
+- Não contém violência
+- Não contém linguagem imprópria
+- Não contém conteúdo adulto ou apostas
+
+Preço:
+Gratuito (Free) com anúncios recompensados opcionais para dicas extras.
+
+
+--------------------------------------------------------------------------------
+2. DESCRIÇÕES DA LOJA (STORE DESCRIPTIONS)
+--------------------------------------------------------------------------------
+
+Breve Descrição (Short Description) [Máx 80 caracteres]:
+Conecte todos os pontos sem tirar o dedo da tela! O desafio mental definitivo.
+
+(Em inglês: Connect all dots with a single continuous stroke! The ultimate brain puzzle.)
+
+
+Descrição Completa (Full Description) [Máx 4000 caracteres]:
+Você consegue conectar todos os pontos com um único traço contínuo, sem tirar o dedo da tela e sem repetir nenhuma linha?
+
+Inspirado no clássico e famoso enigma dos 9 pontos ("Pense fora da caixa"), **Brain Dots: Traço Único** é um jogo de raciocínio e quebra-cabeça relaxante, desafiador e viciante, desenvolvido para exercitar sua mente a qualquer hora e em qualquer lugar!
+
+---
+
+🧠 POR QUE JOGAR BRAIN DOTS?
+
+• 40 NÍVEIS CUIDADOSAMENTE DESENHADOS: Do aquecimento inicial ao modo Mestre Supremo, com geometrias fascinantes, mandalas e constelações.
+• 4 CAPÍTULOS DE DIFICULDADE:
+  - Capítulo 1: O Despertar (Iniciação e conceitos básicos)
+  - Capítulo 2: Geometria Sagrada (Formas poliédricas e simetrias)
+  - Capítulo 3: Labirintos Neurais (Desafios avançados de alta densidade)
+  - Capítulo 4: Mestres do Infinito (Enigmas complexos para gênios do raciocínio)
+• SISTEMA DE DICAS INTELIGENTE: Travou em uma fase difícil? Use a dica passo a passo que mostra o próximo movimento correto! (1ª dica grátis, dicas adicionais por anúncio recompensado).
+• TEMAS VISUAIS CUSTOMIZÁVEIS: Alterne instantaneamente entre os modos Cyber Neon, Dark Minimalista e Sunset Glow.
+• FEEDBACK TÁTIL E SONORO: Sintetizador de áudio relaxante integrado e vibração suave a cada conexão completada.
+• 100% OFFLINE: Jogue no metrô, avião ou sem internet. Seu progresso fica salvo no seu celular.
+
+---
+
+📐 COMO JOGAR:
+1. Toque em um ponto inicial na tela.
+2. Arraste o dedo conectando os pontos pelas linhas do grafo.
+3. Não levante o dedo da tela e não passe duas vezes pela mesma linha.
+4. Conecte todas as linhas para vencer e desbloquear o próximo desafio!
+
+---
+
+💡 BENEFÍCIOS PARA O SEU CÉREBRO:
+Estudos de neurociência e matemática comprovam que quebra-cabeças de caminho euleriano (traço contínuo) estimulam o córtex pré-frontal, melhorando a concentração, a visão espacial, a memória de trabalho e o raciocínio dedutivo. Apenas 10 minutos de treino por dia mantêm sua mente afiada!
+
+Baixe agora **Brain Dots: Traço Único** e descubra até onde vai o seu poder de raciocínio!
+
+
+--------------------------------------------------------------------------------
+3. DIRETRIZES DE ASSETS VISUAIS (VISUAL ASSETS)
+--------------------------------------------------------------------------------
+Todos os arquivos exigidos pela Google Play já foram gerados com perfeição e estão localizados nesta pasta:
+
+1. Ícone do App (App Icon):
+   Arquivo: icon-512x512.png
+   Resolução: 512 x 512 px (PNG 32 bits com canal alpha)
+
+2. Gráfico de Recursos / Banner Promocional (Feature Graphic):
+   Arquivo: feature-graphic-1024x500.png
+   Resolução: 1024 x 500 px (PNG sem transparência)
+
+3. Capturas de Tela do Celular (Phone Screenshots):
+   Resolução: 1080 x 1920 px (Proporção 9:16 vertical)
+   - screenshots/screenshot_1_nivel11.png (Gameplay da fase 11)
+   - screenshots/screenshot_2_mandala.png (Tela de vitória com efeitos)
+   - screenshots/screenshot_3_capitulos.png (Menu com 40 fases e 4 capítulos)
+   - screenshots/screenshot_4_anuncio_dicas.png (Sistema de dicas com anúncios recompensados)
+
+
+--------------------------------------------------------------------------------
+4. DECLARAÇÕES DE SEGURANÇA DE DADOS (DATA SAFETY FORM)
+--------------------------------------------------------------------------------
+Ao preencher a seção "Segurança dos Dados" no Google Play Console:
+- O app coleta dados pessoais? NÃO.
+- O app compartilha dados com terceiros? Apenas identificadores anônimos de publicidade (Google AdMob / Advertising ID) para exibição de anúncios recompensados.
+- Os dados são criptografados em trânsito? SIM (HTTPS).
+- Os usuários podem solicitar exclusão de dados? SIM (limpando o cache/dados do app no aparelho).
+- Política de Privacidade: Ver arquivo `privacy-policy.html`.
